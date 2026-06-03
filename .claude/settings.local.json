@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($r = Invoke-WebRequest -Uri http://localhost:3000 -UseBasicParsing -TimeoutSec 5; if \\($r.Content.Contains\\('一个人'\\)\\) { Write-Output \"Found 一个人\" } else { Write-Output \"NOT FOUND\" }; if \\($r.Content.Contains\\('顶三个'\\)\\) { Write-Output \"Found 顶三个\" } else { Write-Output \"顶三个 not found\" }; if \\($r.Content.Contains\\('招生员'\\)\\) { Write-Output \"Found 招生员\" } else { Write-Output \"招生员 not found\" })"
+    ]
+  }
+}

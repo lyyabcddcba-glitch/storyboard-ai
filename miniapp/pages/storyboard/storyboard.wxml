@@ -1,0 +1,153 @@
+<view class="page">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-row">
+      <text class="logo">🎬</text>
+      <view class="header-text">
+        <text class="title">Storyboard<text class="accent">AI</text></text>
+        <text class="subtitle">AI 分镜脚本生成系统</text>
+      </view>
+    </view>
+    <view class="header-btns">
+      <view class="share-btn {{shots.length ? '' : 'disabled'}}" bindtap="handleShare">
+        <text>📤 分享</text>
+      </view>
+      <view class="export-btn {{shots.length ? '' : 'disabled'}}" bindtap="handleExport">
+        <text>📥 Excel</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 输入面板 -->
+  <view class="input-panel">
+    <view class="field">
+      <text class="label">拍摄主题 *</text>
+      <textarea class="input" value="{{theme}}" placeholder="描述你的拍摄创意...&#10;&#10;例如：雨夜老上海街头，一个女孩追忆逝去的爱情，王家卫风格" bindinput="onTheme" auto-height maxlength="-1"/>
+    </view>
+
+    <view class="row">
+      <view class="field half">
+        <text class="label">视频类型</text>
+        <picker bindchange="onVideoType" value="{{videoTypeIdx}}" range="{{videoTypes}}">
+          <view class="picker">{{videoTypes[videoTypeIdx]}}</view>
+        </picker>
+      </view>
+      <view class="field half">
+        <text class="label">目标设备</text>
+        <picker bindchange="onDevice" value="{{deviceIdx}}" range="{{deviceLabels}}">
+          <view class="picker">{{deviceLabels[deviceIdx]}}</view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="row">
+      <view class="field half">
+        <text class="label">风格参考</text>
+        <input class="input" value="{{style}}" placeholder="王家卫 / 诺兰..." bindinput="onStyle"/>
+      </view>
+      <view class="field half">
+        <text class="label">镜头数量</text>
+        <picker bindchange="onCount" value="{{countIdx}}" range="{{counts}}">
+          <view class="picker">{{counts[countIdx]}} 镜</view>
+        </picker>
+      </view>
+    </view>
+
+    <button class="generate-btn {{generating || !theme ? 'disabled' : ''}}" bindtap="handleGenerate" disabled="{{generating || !theme}}">
+      {{generating ? '⏳ AI 推演中...' : '⚡ 生成分镜脚本'}}
+    </button>
+
+    <!-- 状态 -->
+    <view class="status" wx:if="{{status}}">
+      <text class="status-text {{statusType}}">{{status}}</text>
+    </view>
+  </view>
+
+  <!-- 分镜卡片 -->
+  <view class="cards" wx:if="{{shots.length > 0}}">
+    <view class="cards-header">
+      <text class="cards-title">{{shots.length}} 镜 · 总{{totalDuration}}秒</text>
+      <text class="cards-sub">点击卡片展开详情</text>
+    </view>
+
+    <view class="card {{item.expanded ? 'expanded' : ''}}" wx:for="{{shots}}" wx:for-item="item" wx:key="id" data-index="{{index}}" bindtap="toggleCard">
+      <!-- 卡片头 -->
+      <view class="card-head">
+        <view class="card-head-top">
+          <view class="card-head-left">
+            <text class="shot-id">镜 {{item.id}}</text>
+            <text class="shot-duration">{{item.duration}}s</text>
+            <text class="shot-size tag-{{item.shotSizeClass}}">{{item.shot_size || ''}}</text>
+            <text class="shot-movement">{{item.camera_movement || ''}}</text>
+          </view>
+          <view class="card-head-right">
+            <text class="arrow {{item.expanded ? 'up' : ''}}">▾</text>
+          </view>
+        </view>
+        <!-- 折叠态摘要 -->
+        <view class="card-preview" wx:if="{{!item.expanded && item.visual_art}}">
+          <text class="preview-text">{{item.visual_art}}</text>
+        </view>
+      </view>
+
+      <!-- 卡片内容 -->
+      <view class="card-body" wx:if="{{item.expanded}}">
+        <view class="field-row" wx:if="{{item.camera_setup}}">
+          <text class="field-label">🎥 机位镜头</text>
+          <text class="field-value">{{item.camera_setup}}</text>
+        </view>
+        <view class="field-row" wx:if="{{item.visual_art}}">
+          <text class="field-label">🎨 美术视觉</text>
+          <text class="field-value">{{item.visual_art}}</text>
+        </view>
+        <view class="field-row" wx:if="{{item.content_description}}">
+          <text class="field-label">🎭 内容描述</text>
+          <text class="field-value">{{item.content_description}}</text>
+        </view>
+        <view class="field-row" wx:if="{{item.dialogue && item.dialogue !== '无'}}">
+          <text class="field-label">💬 台词</text>
+          <text class="field-value dialogue">{{item.dialogue}}</text>
+        </view>
+        <view class="field-row" wx:if="{{item.voiceover && item.voiceover !== '无'}}">
+          <text class="field-label">🎙️ 旁白/独白</text>
+          <text class="field-value">{{item.voiceover}}</text>
+        </view>
+        <view class="field-row" wx:if="{{item.sound_effects}}">
+          <text class="field-label">🔊 音效/音乐</text>
+          <text class="field-value">{{item.sound_effects}}</text>
+        </view>
+        <view class="field-row" wx:if="{{item.props_costumes}}">
+          <text class="field-label">👔 道具/服装</text>
+          <text class="field-value">{{item.props_costumes}}</text>
+        </view>
+        <view class="field-row" wx:if="{{item.remarks}}">
+          <text class="field-label">📝 多工种备注</text>
+          <text class="field-value">{{item.remarks}}</text>
+        </view>
+        <view class="card-actions">
+          <view class="copy-btn" catchtap="copyShot" data-index="{{index}}">
+            <text>{{item.copied ? '✓ 已复制' : '📋 复制此镜'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 流式文本预览 -->
+  <view class="stream-preview" wx:if="{{generating && streamText}}">
+    <view class="stream-indicator">
+      <text class="stream-dot">●</text>
+      <text class="stream-label">AI 实时推演中...</text>
+    </view>
+    <scroll-view class="stream-box" scroll-y>
+      <text class="stream-text">{{streamText}}</text>
+    </scroll-view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!generating && !shots.length && !streamText}}">
+    <text class="empty-icon">🎬</text>
+    <text class="empty-title">输入主题，AI 生成分镜</text>
+    <text class="empty-desc">13维度 · 流式输出 · 导出Excel</text>
+  </view>
+</view>

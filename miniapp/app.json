@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/storyboard/storyboard"
+  ],
+  "window": {
+    "navigationBarTitleText": "StoryboardAI",
+    "navigationBarBackgroundColor": "#09090b",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#09090b"
+  },
+  "lazyCodeLoading": "requiredComponents",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

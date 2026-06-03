@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.env.local
+.env.production
+*.tar.gz
+.tea/
+miniapp/utils/config.js
+miniapp/project.private.config.json
+deploy.tar.gz

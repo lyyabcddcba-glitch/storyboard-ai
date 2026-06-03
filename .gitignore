@@ -7,3 +7,7 @@ node_modules/
 miniapp/utils/config.js
 miniapp/project.private.config.json
 deploy.tar.gz
+*.db
+test.svg
+test-verify.xlsx
+.claude/

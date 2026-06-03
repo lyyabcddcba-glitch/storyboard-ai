@@ -22,7 +22,9 @@ RUN npm config set registry https://registry.npmmirror.com
 COPY package.json package-lock.json* ./
 RUN npm ci && npm cache clean --force
 
+COPY prisma ./prisma
 COPY . .
+RUN npx prisma generate
 RUN npm run build
 
 # ---- Stage 3: 运行时 ----
@@ -32,6 +34,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+
+# 复制 Prisma
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # 创建非 root 用户
 RUN addgroup -g 1001 -S nodejs && \

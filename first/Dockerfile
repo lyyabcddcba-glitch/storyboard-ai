@@ -24,6 +24,7 @@ RUN npm ci && npm cache clean --force
 
 COPY prisma ./prisma
 COPY . .
+RUN mkdir -p public
 RUN npx prisma generate
 RUN npm run build
 
@@ -44,7 +45,6 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001 -G nodejs
 
 # 复制构建产物
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 

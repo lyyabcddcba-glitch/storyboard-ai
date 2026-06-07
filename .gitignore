@@ -11,3 +11,4 @@ deploy.tar.gz
 test.svg
 test-verify.xlsx
 .claude/
+.agents/

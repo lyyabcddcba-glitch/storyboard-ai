@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { salesHubDatabase } from '@/lib/campus-data'
 
 const VIDEO_TYPES = ['商业广告', '剧情短片', '知识科普', '音乐MV', 'Vlog日常', '宣传片', '微电影', '纪录片']
 
@@ -41,6 +41,7 @@ function extractJsonArray(text: string): any[] | null {
 export default function StoryboardPage() {
   const [theme, setTheme] = useState('')
   const [style, setStyle] = useState('')
+  const [schoolCtx, setSchoolCtx] = useState('')  // 三校上下文注入
   const [videoType, setVideoType] = useState('商业广告')
   const [deviceIdx, setDeviceIdx] = useState(0)
   const [showDeviceDropdown, setShowDeviceDropdown] = useState(false)
@@ -88,7 +89,7 @@ export default function StoryboardPage() {
     try {
       const res = await fetch('/api/storyboard/stream', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: theme.trim(), style: style.trim(), videoType, equipment: device.value, promptHint: device.promptHint, shotCount }),
+        body: JSON.stringify({ theme: theme.trim(), style: style.trim(), videoType, equipment: device.value, promptHint: device.promptHint + (schoolCtx ? ' ' + schoolCtx : ''), shotCount }),
       })
       const reader = res.body?.getReader(); if (!reader) throw new Error('No reader')
       const decoder = new TextDecoder(); let partial = ''
@@ -159,6 +160,13 @@ export default function StoryboardPage() {
           <select value={videoType} onChange={e => setVideoType(e.target.value)}
             className="w-full px-3 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-zinc-200 outline-none">
             {VIDEO_TYPES.map(t => <option key={t}>{t}</option>)}
+          </select>
+
+          {/* 三校上下文注入 */}
+          <select value={schoolCtx} onChange={e => { setSchoolCtx(e.target.value); if (e.target.value && !theme) { const s = salesHubDatabase[e.target.value]; if (s) setTheme(`${s.name}校园宣传片`) } }}
+            className="w-full px-3 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-zinc-200 outline-none">
+            <option value="">🎓 关联学校（可选·注入场景关键词）</option>
+            {Object.values(salesHubDatabase).map(s => <option key={s.key} value={s.key}>{s.short} — {s.targetAudience.slice(0, 15)}...</option>)}
           </select>
 
           <div className="relative">

@@ -5,7 +5,7 @@ import { useState } from 'react'
 const QUICK_TAGS = ['嫌套餐贵', '信号质疑', '已有老家卡', '咨询教务挂科', '宿舍断网问题']
 
 const QUICK_FILL: Record<string, string> = {
-  '嫌套餐贵': '每个月要交几十块话费啊？感觉有点贵，我用校园网不行吗？',
+  '嫌套餐贵': '怎么比移动贵了30元？感觉有点贵，我用校园网不行吗？',
   '信号质疑': '学长，听说新宿舍墙壁特别厚，你们电信卡在寝室厕所或者床帘里真的有信号吗？',
   '已有老家卡': '我自己带了老家的无限流量卡，不需要再办本地卡了吧？',
   '咨询教务挂科': '学长，如果期末挂科了后果真的很严重吗？会影响拿毕业证吗？',
@@ -18,13 +18,14 @@ interface Props {
 
 export default function SalesMaster({ schoolKey }: Props) {
   const [userQuery, setUserQuery] = useState('')
-  const [reply, setReply] = useState('')
+  const [chatScript, setChatScript] = useState('')
+  const [strategy, setStrategy] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const askSalesMaster = async () => {
     if (!userQuery.trim() || loading) return
-    setLoading(true); setReply(''); setError('')
+    setLoading(true); setChatScript(''); setStrategy(''); setError('')
     try {
       const res = await fetch('/api/sales-master', {
         method: 'POST',
@@ -33,7 +34,11 @@ export default function SalesMaster({ schoolKey }: Props) {
       })
       const data = await res.json()
       if (data.success) {
-        setReply(data.reply)
+        setChatScript(data.chatScript || '')
+        setStrategy(data.faceToFaceStrategy || '')
+        if (!data.chatScript && !data.faceToFaceStrategy) {
+          setError('AI返回为空，请重试')
+        }
       } else {
         setError(data.error || 'AI响应失败')
       }
@@ -44,15 +49,17 @@ export default function SalesMaster({ schoolKey }: Props) {
     }
   }
 
-  const copyReply = () => {
-    navigator.clipboard.writeText(reply)
+  const copyAll = () => {
+    const text = `【群聊/微信直发】\n${chatScript}\n\n【扫楼面对面攻坚】\n${strategy}`
+    navigator.clipboard.writeText(text)
   }
 
   const fillQuick = (tag: string) => {
     setUserQuery(QUICK_FILL[tag] || '')
-    setReply('')
-    setError('')
+    setChatScript(''); setStrategy(''); setError('')
   }
+
+  const hasResult = chatScript || strategy
 
   return (
     <div className="bg-zinc-900 border-2 border-amber-500/30 rounded-xl p-5 shadow-xl shadow-amber-500/5">
@@ -60,9 +67,7 @@ export default function SalesMaster({ schoolKey }: Props) {
       <div className="flex items-center gap-2 mb-4">
         <span className="text-xl">🤖</span>
         <h3 className="text-base font-bold text-amber-400">AI 销售大师 · 实时对线端口</h3>
-        <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
-          实时赋能中
-        </span>
+        <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">实时赋能</span>
       </div>
 
       {/* 快捷标签 */}
@@ -93,18 +98,37 @@ export default function SalesMaster({ schoolKey }: Props) {
         <div className="mt-3 p-3 bg-red-500/5 border border-red-500/20 rounded-lg text-xs text-red-400">{error}</div>
       )}
 
-      {/* 回复区 */}
-      {reply && (
-        <div className="mt-4 bg-zinc-950 border border-zinc-800 rounded-lg p-4 relative">
-          <div className="text-xs text-amber-400 font-bold mb-2 flex justify-between items-center">
-            <span>🔥 销冠策略回复：</span>
-            <button onClick={copyReply} className="text-zinc-500 hover:text-amber-400 transition text-xs px-2 py-1 rounded bg-zinc-900 border border-zinc-800">
-              📋 一键复制
-            </button>
-          </div>
-          <div className="text-sm text-zinc-300 whitespace-pre-line leading-relaxed">
-            {reply}
-          </div>
+      {/* 结果区 — 结构化双卡片 */}
+      {hasResult && (
+        <div className="mt-4 space-y-3">
+          {chatScript && (
+            <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-amber-500 font-bold">💬 【群聊/微信直发模板】</span>
+                <button onClick={() => navigator.clipboard.writeText(chatScript)}
+                  className="text-xs text-zinc-500 hover:text-amber-400 transition px-2 py-0.5 rounded border border-zinc-800">
+                  📋 复制
+                </button>
+              </div>
+              <p className="text-sm text-zinc-300 leading-relaxed">{chatScript}</p>
+            </div>
+          )}
+          {strategy && (
+            <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-blue-400 font-bold">⚡ 【线下扫楼攻坚切入点】</span>
+                <button onClick={() => navigator.clipboard.writeText(strategy)}
+                  className="text-xs text-zinc-500 hover:text-blue-400 transition px-2 py-0.5 rounded border border-zinc-800">
+                  📋 复制
+                </button>
+              </div>
+              <p className="text-sm text-zinc-400 leading-relaxed">{strategy}</p>
+            </div>
+          )}
+          <button onClick={copyAll}
+            className="w-full py-2 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg hover:bg-amber-500/20 transition">
+            📋 一键复制全部（话术+策略）
+          </button>
         </div>
       )}
     </div>

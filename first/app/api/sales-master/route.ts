@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const SILICONFLOW_KEY = process.env.SILICONFLOW_API_KEY || ''
-const API_URL = 'https://api.siliconflow.cn/v1/chat/completions'
+const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY || ''
+const SILICONFLOW_API = 'https://api.siliconflow.cn/v1/chat/completions'
+const DEEPSEEK_API = 'https://api.deepseek.com/v1/chat/completions'
 
 const SYSTEM_INSTRUCTION = `你现在是针对西南石油大学(南充)、西华师范大学、川北医学院三校迎新地推团队的【全能AI销冠导师】。
 当有新生或客户提出提问或刁难时，你必须以一位【极其热情、贴心、幽默且超级宠溺的资深大二亲学长/亲学姐】身份，给出一段非常详细、充满人情味、能彻底打动人心的专业长文解答。
@@ -37,8 +39,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '请输入新生原话' }, { status: 400 })
     }
 
-    if (!SILICONFLOW_KEY) {
-      return NextResponse.json({ success: false, error: '未配置 SILICONFLOW_API_KEY' }, { status: 500 })
+    if (!DEEPSEEK_KEY && !SILICONFLOW_KEY) {
+      return NextResponse.json({ success: false, error: '未配置 API Key' }, { status: 500 })
     }
 
     const schoolNames: Record<string, string> = {
@@ -47,21 +49,26 @@ export async function POST(request: NextRequest) {
       nsmc: '川北医学院(临江新校区)',
     }
 
-    const res = await fetch(API_URL, {
+    // DeepSeek 优先（话多、爱展开、更懂中文商业话术）
+    const apiUrl = DEEPSEEK_KEY ? DEEPSEEK_API : SILICONFLOW_API
+    const apiKey = DEEPSEEK_KEY || SILICONFLOW_KEY
+    const model = DEEPSEEK_KEY ? 'deepseek-chat' : 'Qwen/Qwen2.5-7B-Instruct'
+
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SILICONFLOW_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'Qwen/Qwen2.5-7B-Instruct',
+        model,
         messages: [
           { role: 'system', content: SYSTEM_INSTRUCTION },
           { role: 'user', content: `当前学校: ${schoolNames[schoolKey] || schoolKey}, 分类: ${contextTag || '套餐咨询'}, 新生原话: "${userQuery}"` },
         ],
-        temperature: 0.6,
-        max_tokens: 1500,           // 暴力提升，杜绝截断
-        frequency_penalty: 1.1,
+        temperature: DEEPSEEK_KEY ? 0.8 : 0.6,
+        max_tokens: 2000,           // DeepSeek 天生话痨，给足空间
+        frequency_penalty: 0.5,
         presence_penalty: 0.3,
       }),
     })

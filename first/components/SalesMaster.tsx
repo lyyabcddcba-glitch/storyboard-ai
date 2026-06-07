@@ -98,27 +98,31 @@ export default function SalesMaster({ schoolKey }: Props) {
         <div className="mt-3 p-3 bg-red-500/5 border border-red-500/20 rounded-lg text-xs text-red-400">{error}</div>
       )}
 
-      {/* 结果区 — 结构化双卡片 */}
+      {/* 结果区 — 温馨长文卡片 */}
       {hasResult && (
         <div className="mt-4 space-y-3">
           {chatScript && (
-            <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-amber-500 font-bold">💬 【群聊/微信直发模板】</span>
+            <div className="bg-zinc-950 rounded-xl border border-zinc-800/80 p-4 shadow-inner">
+              <div className="flex items-center gap-1 mb-2">
+                <span>✨</span>
+                <span className="text-xs text-amber-500 font-bold">【暖心学长学姐详细解析长文】</span>
                 <button onClick={() => navigator.clipboard.writeText(chatScript)}
-                  className="text-xs text-zinc-500 hover:text-amber-400 transition px-2 py-0.5 rounded border border-zinc-800">
+                  className="ml-auto text-xs text-zinc-500 hover:text-amber-400 transition px-2 py-0.5 rounded border border-zinc-800">
                   📋 复制
                 </button>
               </div>
-              <p className="text-sm text-zinc-300 leading-relaxed">{chatScript}</p>
+              <p className="text-sm text-zinc-200 whitespace-pre-line leading-relaxed tracking-wide">
+                {chatScript}
+              </p>
             </div>
           )}
           {strategy && (
-            <div className="bg-zinc-950 rounded-lg border border-zinc-800 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-blue-400 font-bold">⚡ 【线下扫楼攻坚切入点】</span>
+            <div className="bg-zinc-950 rounded-xl border border-zinc-800/80 p-4">
+              <div className="flex items-center gap-1 mb-2">
+                <span>⚡</span>
+                <span className="text-xs text-cyan-400 font-bold">【销冠战场节奏指引】</span>
                 <button onClick={() => navigator.clipboard.writeText(strategy)}
-                  className="text-xs text-zinc-500 hover:text-blue-400 transition px-2 py-0.5 rounded border border-zinc-800">
+                  className="ml-auto text-xs text-zinc-500 hover:text-cyan-400 transition px-2 py-0.5 rounded border border-zinc-800">
                   📋 复制
                 </button>
               </div>
@@ -126,8 +130,8 @@ export default function SalesMaster({ schoolKey }: Props) {
             </div>
           )}
           <button onClick={copyAll}
-            className="w-full py-2 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg hover:bg-amber-500/20 transition">
-            📋 一键复制全部（话术+策略）
+            className="w-full py-2.5 text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg hover:bg-amber-500/20 transition font-medium">
+            📋 一键复制全部（长文+策略）
           </button>
         </div>
       )}

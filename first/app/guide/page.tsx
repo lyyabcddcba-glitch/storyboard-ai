@@ -1,186 +1,156 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { salesHubDatabase, CHECKLIST_ITEMS } from '@/lib/campus-data'
 
-const SCHOOLS = Object.values(salesHubDatabase)
-const TYPE_COLORS: Record<string, string> = {
-  danger: 'border-red-500/30 bg-red-500/5',
-  warning: 'border-amber-500/30 bg-amber-500/5',
-  info: 'border-blue-500/30 bg-blue-500/5',
-  success: 'border-green-500/30 bg-green-500/5',
-  primary: 'border-indigo-500/30 bg-indigo-500/5',
-}
+const STAGES = [
+  {
+    id: '01', title: '选择引流战场', color: 'amber',
+    subtitle: '立稳大二暖心学长姐人设，混入新生流量池',
+    platforms: [
+      { icon: '🟢', name: '微信群 / QQ群', desc: '混新生群发避坑指南', hover: 'hover:border-green-500/40' },
+      { icon: '📕', name: '小红书', desc: '发高颜值宿舍食堂实景', hover: 'hover:border-red-500/40' },
+      { icon: '⚫', name: '抖音', desc: '配欢快BGM发校园vlog', hover: 'hover:border-white/30' },
+      { icon: '🔵', name: '贴吧 / 知乎', desc: '专业回答选号和网速细节', hover: 'hover:border-blue-500/40' },
+    ],
+  },
+]
 
-const TAG_COLORS: Record<string, string> = {
-  danger: 'bg-red-500/10 text-red-400 border-red-500/20',
-  warning: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  info: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  success: 'bg-green-500/10 text-green-400 border-green-500/20',
-  primary: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-}
+const HOOKS_TEXT = '学弟学妹注意啦！咱们学校宿舍周内晚上断电后Wi-Fi全断。我们几位大二学长亲测整理了今年网络最稳、打游戏看网课延迟最低的选号避坑攻略。需要的在评论区扣个"1"，学长私发给你详细避坑指南，顺便带你了解咱们新宿舍和食堂哪个档口打菜不手抖！'
+
+const ICE_BREAKER_TEXT = `哈哈学弟/学妹别慌！作为你的亲学长姐，今天摸着良心给你一次性盘得明明白白，保证让你开学不踩一丁点坑！
+
+咱们团队这次6.15重磅上线的电信迎新官方卡，全线套餐都有一个绝杀福利：【全部白送1000分钟国内超大通话】！开学后想家了给爸妈打电话、或者跟异地恋对象煲电话粥直接打到爽，电话费直接省下。
+
+至于怎么选，听学长姐一句劝，直接一步到位选【有校园网的套餐】。这卡里包含360G市区流量（还可以无限叠加），在学校追剧、刷网课、打游戏闭着眼睛造都用不完。最硬核的是它【直接自带咱们寝室的高速光纤宽带校园网】！你要是图便宜选了外面不带网的卡，进了新宿舍每个月还得自己额外花30多块拉网线，四年下来多花一千多，那才是真冤枉。
+
+咱们学校周内晚上11点可是准时拉闸断电的，到时候宿舍Wi-Fi路由器瞬间全灭，普通的卡在寝室死角直接变信号孤岛。而咱们这款有校园网的套餐自带电信夜间5G基站增压，一网通全包，最省心也最省钱。选它绝对不踩坑，开学学长姐带你吃食堂不手抖的档口！`
+
+const VERSUS_TEXT = '哈哈学弟，移动送2个会员都是定向流量圈套，在宿舍根本用不了！咱们【有校园网的套餐】自带360G市区流量可无限叠加，还白送1000分钟通话跟宿舍宽带。办移动你每个月还得额外花几十块拉宽带，四年多花一千多！我们一网通全包，省下的钱能买几百个月的会员，听学长的直接上全能卡！'
+
+const GRAD_CARD_TEXT = '学妹，19元那个是给大四出去实习、不回宿舍住的【毕业生专属卡】，不带校园网宽带，而且名额是锁死的，咱们在校大一新生系统不让通过。听话，咱们天天在宿舍里，黄金首选绝对是【有校园网的套餐】，网速最顶还免了四年宽带费，这才是真省钱！'
 
 export default function GuidePage() {
-  const [activeSchool, setActiveSchool] = useState('swpu')
-  const [checklist, setChecklist] = useState<Record<string, boolean>>({})
   const [copied, setCopied] = useState('')
-  const [showPitchTip, setShowPitchTip] = useState(false)
-  const campus = salesHubDatabase[activeSchool]
 
-  const toggleCheck = (id: string) => {
-    setChecklist(prev => {
-      const next = { ...prev, [id]: !prev[id] }
-      // 如果勾选了带 triggerPitch 的项，弹出扫楼话术
-      const item = CHECKLIST_ITEMS.find(i => i.id === id)
-      if (next[id] && (item as any)?.triggerPitch) {
-        setShowPitchTip(true)
-        setTimeout(() => setShowPitchTip(false), 8000)
-      }
-      return next
-    })
-  }
-
-  const handleCopy = (text: string) => {
+  const copyText = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
-    setCopied(text)
+    setCopied(label)
     setTimeout(() => setCopied(''), 2000)
   }
 
-  const checkedCount = Object.values(checklist).filter(Boolean).length
-
   return (
-    <div className="p-6 space-y-5 max-w-6xl">
-      {/* 页头 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-white">📚 三校战时知识库</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">团队内部工具 · 极速检索 · 痛点高亮 · 扫楼军师</p>
-        </div>
-        <Link href="/sales" className="text-xs text-indigo-400 hover:text-indigo-300 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
-          💬 打开销售金句库 →
-        </Link>
+    <div className="p-6 space-y-6 max-w-5xl">
+      <div className="mb-2 border-b border-zinc-800 pb-4">
+        <h1 className="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
+          🚀 跨平台地推引流与对线全流程流水线
+        </h1>
+        <p className="text-xs text-zinc-400 mt-1">面向地推团队：从各大平台爆款引流到微信/QQ私聊合围，一键复制销冠子弹。</p>
       </div>
 
-      {/* 学校切换 Tab */}
-      <div className="flex gap-2">
-        {SCHOOLS.map(s => (
-          <button key={s.key} onClick={() => { setActiveSchool(s.key); setShowPitchTip(false) }}
-            className={`px-4 py-3 text-sm font-semibold rounded-xl transition-all border ${
-              activeSchool === s.key
-                ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/40 shadow-lg shadow-indigo-500/10'
-                : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:text-zinc-300 hover:border-zinc-700'
-            }`}>
-            {s.short}
-            <span className="block text-[10px] font-normal text-zinc-600 mt-0.5">{s.targetAudience.slice(0, 12)}...</span>
-          </button>
-        ))}
-      </div>
-
-      {/* 🎯 绝杀话术卡片（霓虹边框） */}
-      <div className="relative bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border-2 border-amber-500/30 rounded-2xl p-6 shadow-xl shadow-amber-500/5">
-        <div className="absolute -top-3 left-6 text-[10px] font-bold text-amber-500 bg-zinc-950 px-3 py-0.5 rounded-full border border-amber-500/30 uppercase tracking-widest">
-          🎯 {campus.short} 绝杀话术
+      {/* Stage 01: 选择战场 */}
+      <div className="relative pl-8 border-l-2 border-amber-500/30 pb-4">
+        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-amber-500 border-4 border-zinc-950 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+        <div className="flex items-center gap-2 mb-3">
+          <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-[10px] font-mono font-bold rounded border border-amber-500/20">STAGE 01</span>
+          <h2 className="text-base font-bold text-zinc-200">选择引流战场</h2>
         </div>
-        <div className="flex items-center gap-2 mb-2 mt-1">
-          <span className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-500">面向：{campus.targetAudience}</span>
-        </div>
-        <p className="text-sm text-zinc-200 leading-relaxed">{campus.killerPitch}</p>
-        <button
-          onClick={() => handleCopy(campus.killerPitch)}
-          className={`mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl transition-all ${
-            copied === campus.killerPitch
-              ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-              : 'bg-amber-500 hover:bg-amber-400 text-black'
-          }`}>
-          {copied === campus.killerPitch ? '✓ 已复制到剪贴板' : '📋 一键复制绝杀话术'}
-        </button>
-      </div>
-
-      {/* 五维核心知识格 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {campus.gridData.map((item, i) => (
-          <div key={i} className={`rounded-xl border p-5 ${TYPE_COLORS[item.type]} transition-all hover:scale-[1.01]`}>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-zinc-200">{item.title}</h3>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full border ${TAG_COLORS[item.type]}`}>{item.tag}</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {STAGES[0].platforms.map(p => (
+            <div key={p.name} className={`p-3 bg-zinc-900/60 rounded-xl border border-zinc-800 text-center ${p.hover} transition-all cursor-pointer`}>
+              <div className="text-xl mb-1">{p.icon}</div>
+              <div className="text-xs font-bold text-zinc-300">{p.name}</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">{p.desc}</div>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed">{item.content}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* 📋 入学物资清单 + 动态扫楼提示 */}
-      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-zinc-200">📋 入学物资清单</h3>
-          <span className="text-xs text-zinc-500">{checkedCount}/{CHECKLIST_ITEMS.length} 项</span>
-        </div>
-
-        {/* 动态扫楼话术弹出 */}
-        {showPitchTip && (
-          <div className="mb-4 bg-gradient-to-r from-amber-500/10 to-red-500/10 border border-amber-500/30 rounded-xl p-4 animate-pulse">
-            <div className="text-[10px] text-amber-500 uppercase tracking-widest mb-1">💡 队员扫楼话术提示</div>
-            <div className="space-y-1">
-              {campus.checklistHighlights.map((hint, i) => (
-                <p key={i} className="text-xs text-zinc-300">• {hint}</p>
-              ))}
-            </div>
-            <Link href="/booking"
-              className="inline-flex items-center gap-1 mt-2 text-xs text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 hover:bg-amber-500/20">
-              📱 打开选号预约页备用 →
-            </Link>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-          {CHECKLIST_ITEMS.map(item => (
-            <label key={item.id}
-              className={`flex items-center gap-2.5 p-3 rounded-lg cursor-pointer transition-all border ${
-                checklist[item.id]
-                  ? 'bg-green-500/5 border-green-500/20'
-                  : (item as any).triggerPitch
-                    ? 'bg-amber-500/5 border-amber-500/20 hover:border-amber-500/40'
-                    : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
-              }`}>
-              <input type="checkbox" checked={!!checklist[item.id]} onChange={() => toggleCheck(item.id)}
-                className="w-4 h-4 rounded accent-indigo-500"/>
-              <span className={`text-xs ${checklist[item.id] ? 'text-zinc-500 line-through' : 'text-zinc-400'}`}>
-                {item.label}
-                {(item as any).triggerPitch && <span className="text-amber-500 ml-0.5">⚡</span>}
-              </span>
-            </label>
           ))}
         </div>
       </div>
 
-      {/* 三校对比速览 */}
-      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-5">
-        <h3 className="text-sm font-bold text-zinc-200 mb-4">📊 三校痛点对比速览</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zinc-800 text-zinc-500 text-left">
-                <th className="py-2 pr-4 font-medium">学校</th>
-                <th className="py-2 pr-4 font-medium">断电时间</th>
-                <th className="py-2 pr-4 font-medium">宿舍规格</th>
-                <th className="py-2 pr-4 font-medium">核心痛点</th>
-                <th className="py-2 font-medium">绝杀锚点</th>
-              </tr>
-            </thead>
-            <tbody className="text-zinc-400 text-xs">
-              {SCHOOLS.map(s => (
-                <tr key={s.key} className={`border-b border-zinc-800/50 ${activeSchool === s.key ? 'bg-indigo-500/5' : ''}`}>
-                  <td className="py-3 pr-4 text-zinc-200 font-medium">{s.short}</td>
-                  <td className="py-3 pr-4">{s.gridData[0]?.content.slice(0, 25)}...</td>
-                  <td className="py-3 pr-4">{s.gridData[1]?.tag || '-'}</td>
-                  <td className="py-3 pr-4"><span className="text-red-400">{s.gridData[0]?.tag}</span></td>
-                  <td className="py-3"><span className="text-amber-400">{s.gridData.find(g => g.type === 'danger')?.tag || s.gridData[0]?.tag}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Stage 02: 丢下钩子 */}
+      <div className="relative pl-8 border-l-2 border-amber-500/30 pb-4">
+        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-amber-500 border-4 border-zinc-950 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+        <div className="flex items-center gap-2 mb-3">
+          <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-[10px] font-mono font-bold rounded border border-amber-500/20">STAGE 02</span>
+          <h2 className="text-base font-bold text-zinc-200">丢下引流钩子（文案 + 素材配合）</h2>
         </div>
+        <div className="bg-zinc-900/40 p-4 rounded-xl border border-zinc-800/80">
+          <div className="text-xs text-zinc-400 mb-2 flex justify-between items-center flex-wrap gap-2">
+            <span>📸 配合素材：建议配上宿舍实景、高颜值食堂、校区标志建筑照片。</span>
+            <button onClick={() => copyText(HOOKS_TEXT, 'hook')}
+              className={`text-xs px-3 py-1 rounded transition-all font-bold ${
+                copied === 'hook' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-black'
+              }`}>
+              {copied === 'hook' ? '✓ 已复制' : '📋 一键复制钩子文案'}
+            </button>
+          </div>
+          <div className="p-3 bg-zinc-950 rounded border border-zinc-800 text-sm text-zinc-300 leading-relaxed">
+            {HOOKS_TEXT}
+          </div>
+        </div>
+      </div>
+
+      {/* Stage 03: 私聊长文轰炸 */}
+      <div className="relative pl-8 border-l-2 border-amber-500/30 pb-4">
+        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-amber-500 border-4 border-zinc-950 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+        <div className="flex items-center gap-2 mb-3">
+          <span className="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-[10px] font-mono font-bold rounded border border-amber-500/20">STAGE 03</span>
+          <h2 className="text-base font-bold text-zinc-200">客户上钩，后台私聊长文轰炸</h2>
+        </div>
+        <div className="bg-zinc-900/40 p-4 rounded-xl border border-zinc-800/80">
+          <div className="text-xs text-zinc-400 mb-2 flex justify-between items-center flex-wrap gap-2">
+            <span>💬 新生在评论区扣"1"或私信"怎么选套餐"时，直接甩出。</span>
+            <button onClick={() => copyText(ICE_BREAKER_TEXT, 'ice')}
+              className={`text-xs px-3 py-1 rounded transition-all font-bold ${
+                copied === 'ice' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-black'
+              }`}>
+              {copied === 'ice' ? '✓ 已复制' : '📋 一键复制暖心长文'}
+            </button>
+          </div>
+          <div className="p-3 bg-zinc-950 rounded border border-zinc-800 text-sm text-zinc-300 whitespace-pre-line leading-relaxed">
+            {ICE_BREAKER_TEXT}
+          </div>
+        </div>
+      </div>
+
+      {/* Stage 04: 异议绝杀 */}
+      <div className="relative pl-8">
+        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-orange-500 border-4 border-zinc-950 shadow-[0_0_10px_rgba(249,115,22,0.5)]" />
+        <div className="flex items-center gap-2 mb-3">
+          <span className="px-2 py-0.5 bg-orange-500/10 text-orange-400 text-[10px] font-mono font-bold rounded border border-orange-500/20">STAGE 04</span>
+          <h2 className="text-base font-bold text-zinc-200">异议对抗绝杀（破解移动套路，锁死主推卡）</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-zinc-900/40 p-4 rounded-xl border border-zinc-800/80">
+            <div className="text-xs text-red-400 font-bold mb-2 flex justify-between items-center">
+              <span>🛑 当新生嫌贵 / 对比移动两个会员时：</span>
+              <button onClick={() => copyText(VERSUS_TEXT, 'vs')}
+                className={`text-[10px] px-2 py-0.5 rounded transition-all font-bold ${
+                  copied === 'vs' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white'
+                }`}>
+                {copied === 'vs' ? '✓ 已复制' : '复制绝杀话术'}
+              </button>
+            </div>
+            <p className="text-xs text-zinc-300 bg-zinc-950 p-3 rounded border border-zinc-800 leading-relaxed">{VERSUS_TEXT}</p>
+          </div>
+
+          <div className="bg-zinc-900/40 p-4 rounded-xl border border-zinc-800/80">
+            <div className="text-xs text-cyan-400 font-bold mb-2 flex justify-between items-center">
+              <span>🎓 当新生贪便宜想办19元引流卡时：</span>
+              <button onClick={() => copyText(GRAD_CARD_TEXT, 'grad')}
+                className={`text-[10px] px-2 py-0.5 rounded transition-all font-bold ${
+                  copied === 'grad' ? 'bg-green-500/20 text-green-400' : 'bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-white'
+                }`}>
+                {copied === 'grad' ? '✓ 已复制' : '复制堵死话术'}
+              </button>
+            </div>
+            <p className="text-xs text-zinc-300 bg-zinc-950 p-3 rounded border border-zinc-800 leading-relaxed">{GRAD_CARD_TEXT}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 底部快捷跳转 */}
+      <div className="flex justify-center gap-4 pt-4 border-t border-zinc-800">
+        <a href="/sales" className="text-xs text-indigo-400 hover:text-indigo-300">💬 打开 AI 销售大师 →</a>
+        <a href="/booking" className="text-xs text-amber-400 hover:text-amber-300">📱 打开选号预约 →</a>
       </div>
     </div>
   )

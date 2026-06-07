@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { salesHubDatabase, SALES_GOLD_QUOTES } from '@/lib/campus-data'
+import SalesMaster from '@/components/SalesMaster'
 
 const CATEGORIES = ['全部', '⭐ 群聊破冰', '⭐ 扫楼破门', '⭐ 解决抗拒', '网络优势', '价格说服', '校园场景', '竞品对比']
 
@@ -84,6 +85,9 @@ export default function SalesPage() {
           </div>
         ))}
       </div>
+
+      {/* 🤖 AI 销售大师实时对线 */}
+      <SalesMaster schoolKey={activeSchool} />
     </div>
   )
 }

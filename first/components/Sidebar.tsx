@@ -13,14 +13,14 @@ const NAV_ITEMS = [
     section: '🎬 创作中心',
     items: [
       { href: '/storyboard', label: 'AI 分镜脚本', icon: '🎥' },
-      { href: '/storyboard', label: 'AI 分镜生图', icon: '🖼️' },
+      { href: '/gallery', label: 'AI 生图作品集', icon: '🖼️' },
     ],
   },
   {
     section: '⚡ 战时支撑',
     items: [
       { href: '/sales', label: '销售金句库', icon: '💬' },
-      { href: '/materials', label: '三校素材库', icon: '📁' },
+      { href: '/materials', label: '素材库（入库）', icon: '📁' },
     ],
   },
   {

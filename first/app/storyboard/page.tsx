@@ -75,6 +75,12 @@ export default function StoryboardPage() {
       const data = await res.json()
       if (data.success && data.url) {
         setShotImages(prev => ({ ...prev, [shot.id]: { url: data.url, author: data.author, keywords: data.prompt?.slice(0, 50), loading: false } }))
+        // 自动同步到 AI 作品集
+        try {
+          const gallery = JSON.parse(localStorage.getItem('storyboard-gallery') || '[]')
+          gallery.unshift({ id: Date.now().toString(), url: data.url, prompt: data.prompt || '', createdAt: new Date().toLocaleDateString('zh-CN') })
+          localStorage.setItem('storyboard-gallery', JSON.stringify(gallery.slice(0, 50)))
+        } catch {}
       } else {
         setShotImages(prev => ({ ...prev, [shot.id]: { loading: false } }))
       }

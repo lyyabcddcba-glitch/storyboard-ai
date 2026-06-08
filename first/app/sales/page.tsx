@@ -74,13 +74,13 @@ export default function SalesPage() {
               <span className={`text-[10px] px-2 py-0.5 rounded ${s.gold ? 'bg-amber-500/20 text-amber-400' : 'bg-zinc-800 text-zinc-500'}`}>
                 {s.gold ? '⭐ ' : ''}{s.category}
               </span>
-              <button onClick={() => { navigator.clipboard.writeText(s.text || s.a!); setCopied(s.text || s.a!); setTimeout(() => setCopied(''), 2000) }}
-                className={`text-xs px-2.5 py-1 rounded-lg ${copied === (s.text || s.a) ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'text-zinc-600 hover:text-zinc-400'}`}>
-                {copied === (s.text || s.a) ? '✓ 已复制' : '📋 复制'}
+              <button onClick={() => { const txt = (s as any).text || (s as any).a || ''; navigator.clipboard.writeText(txt); setCopied(txt); setTimeout(() => setCopied(''), 2000) }}
+                className={`text-xs px-2.5 py-1 rounded-lg ${copied === ((s as any).text || (s as any).a) ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'text-zinc-600 hover:text-zinc-400'}`}>
+                {copied === ((s as any).text || (s as any).a) ? '✓ 已复制' : '📋 复制'}
               </button>
             </div>
             {(s as any).q && <div className="text-xs text-amber-400 font-medium mb-1.5">{(s as any).q}</div>}
-            <div className="text-sm text-zinc-300 leading-relaxed">{s.text || (s as any).a}</div>
+            <div className="text-sm text-zinc-300 leading-relaxed">{(s as any).text || (s as any).a}</div>
             {(s as any).tips && <div className="mt-2 pt-2 border-t border-zinc-800 text-[10px] text-zinc-600">💡 {(s as any).tips}</div>}
           </div>
         ))}

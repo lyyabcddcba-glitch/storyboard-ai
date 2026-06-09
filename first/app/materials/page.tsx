@@ -7,6 +7,63 @@ interface Material { id: string; school: string; type?: string; title: string; u
 interface TextMat { id: string; school: string; academy: string; major: string; tag: string; content: string }
 
 const SCHOOLS = ['全部', '西油', '西华师大', '川北医', '西南石油大学']
+
+/* ── 智能检索组件 ── */
+function SmartSearch({ textCount }: { textCount: number }) {
+  const [q, setQ] = useState('')
+  const [results, setResults] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  const search = async () => {
+    if (!q.trim()) return
+    setLoading(true)
+    try {
+      const r = await fetch('/api/materials-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: q }) })
+      const j = await r.json()
+      if (j.success) setResults(j.results)
+    } catch {} finally { setLoading(false) }
+  }
+
+  return (
+    <div className="bg-gradient-to-r from-indigo-500/5 to-purple-500/5 border border-indigo-500/20 rounded-xl p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-lg">🔍</span>
+        <h3 className="text-sm font-bold text-indigo-400">智能知识检索</h3>
+        <span className="text-[10px] text-zinc-600">输入任意关键词，从 {textCount} 条库存中秒级匹配</span>
+      </div>
+      <div className="flex gap-2">
+        <input value={q} onChange={e => setQ(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && search()}
+          placeholder="输入你想查的专业、学院、或任何关键词..."
+          className="flex-1 px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-sm text-zinc-200 outline-none focus:border-indigo-500"/>
+        <button onClick={search} disabled={loading}
+          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg disabled:opacity-50">
+          {loading ? '检索中...' : '搜索'}
+        </button>
+      </div>
+      {results.length > 0 && (
+        <div className="space-y-2 max-h-80 overflow-y-auto">
+          {results.map((r: any, i: number) => (
+            <div key={r.id || i} className="bg-zinc-900 border border-zinc-800 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-1.5 py-0.5 rounded">{r.school}</span>
+                <span className="text-xs text-zinc-300 font-bold">{r.major}</span>
+                <span className="text-[10px] text-zinc-500">{r.tag}</span>
+                <span className="text-[10px] text-zinc-600 ml-auto">相关度: {r.score}</span>
+              </div>
+              <p className="text-xs text-zinc-400 line-clamp-3 mb-2">{r.content}</p>
+              <button onClick={() => navigator.clipboard.writeText(r.content)}
+                className="text-[10px] text-indigo-400 hover:text-indigo-300">📋 复制整段</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {results.length === 0 && q && !loading && (
+        <p className="text-xs text-zinc-600">没有匹配结果，尝试其他关键词或先录入相关知识</p>
+      )}
+    </div>
+  )
+}
 const IMG_TYPES = ['全部', '实景照片', '宣传海报', '视频素材', '截图']
 const TAG_OPTIONS = ['专业引流对线', '官方核心主旨', '考研深造去向', '扫楼破冰金句']
 const SCHOOL_OPTS = ['西南石油大学', '西华师大', '川北医']
@@ -167,6 +224,9 @@ export default function MaterialsPage() {
       {/* ========== 文字 Tab ========== */}
       {activeTab === 'text' && (
         <>
+          {/* 🔍 智能检索 — 输入问题立刻匹配库存知识 */}
+          <SmartSearch textCount={texts.length} />
+
           <div className="bg-zinc-900/50 border border-cyan-500/20 rounded-xl p-5 space-y-4">
             <h3 className="text-sm font-bold text-cyan-400">📥 专业/聊天文字素材录入</h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
